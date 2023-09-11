@@ -28,6 +28,18 @@ def watchDirectory(Path pathToWatch) {
 }
 
 def createTestStructure(File newFile) {
+
+    def extension = newFile.name.split("\\.").last()
+
+    if (extension == "groovy") {
+        createGroovyTestStructure(newFile)
+    } else if (extension == "ps1") {
+        createPs1TestStructure(newFile)
+    }
+}
+
+
+def createGroovyTestStructure(File newFile) {
     // Determine the root project directory
     def rootProjectDir = newFile.absolutePath.split("src\\\\main\\\\groovy")[0]
 
@@ -60,10 +72,34 @@ def createTestStructure(File newFile) {
     println "Test file created: ${testFile}"
 }
 
-String getNameWithoutExtension(File file) {
-    return file.name.take(file.name.lastIndexOf('.'))
+def createPs1TestStructure(File newFile) {
+    def rootProjectDir = newFile.absolutePath.split("src\\\\main\\\\powershell")[0]
+    def baseDir = new File(rootProjectDir, "src\\test\\powershell")
+
+    def relativePath = newFile.absolutePath.replace(rootProjectDir + "src\\main\\powershell\\", "").replace(newFile.name, "")
+
+    def testDir = new File(baseDir, relativePath)
+    testDir.mkdirs()
+
+
+    def testFileName = getNameWithoutExtension(newFile) + "Test.ps1"
+    def testFile = new File(testDir, testFileName)
+
+
+    testFile.text = """Describe "${getNameWithoutExtension(newFile)} functionality" {
+Context "Functionality 1" {
+It "Does something expected" {
+\$true | Should -Be \$true
+            }
+        }
+    }
+"""
+    println "Pester test file created: ${testFile}"
 }
 
 
+String getNameWithoutExtension(File file) {
+    return file.name.take(file.name.lastIndexOf('.'))
+}
 
 watchDirectory(Paths.get("..\\src\\main\\groovy"))

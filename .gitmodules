@@ -1,0 +1,3 @@
+[submodule "Canvas"]
+	path = Canvas
+	url = git@github.com:varangian-core/Canvas.git
